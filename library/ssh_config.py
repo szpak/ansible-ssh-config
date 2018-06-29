@@ -58,6 +58,11 @@ options:
     description:
       - Sets the ProxyCommand option.
     required: false
+  identity_file_existence_checking:
+    description:
+      - Whether to verify existence of defined identity file. Useful for preparing images with configuration provided at runtime.
+    default: true
+    required: false
 '''
 
 EXAMPLES = '''
@@ -709,6 +714,7 @@ def main():
                 default=None,
                 choices=['yes', 'no', 'ask']
             ),
+            identity_file_existence_checking=dict(default=True, type='bool'),
         ),
         supports_check_mode=True
     )
@@ -723,6 +729,7 @@ def main():
         strict_host_key_checking=module.params.get('strict_host_key_checking'),
         user_known_hosts_file=module.params.get('user_known_hosts_file'),
         proxycommand=module.params.get('proxycommand'),
+        identity_file_existence_checking=module.params.get('identity_file_existence_checking')
     )
     state = module.params.get('state')
     config_changed = False
@@ -739,7 +746,7 @@ def main():
         )
 
     # See if the identity file exists or not, relative to the config file
-    if os.path.exists(config_file) and args['identity_file']:
+    if os.path.exists(config_file) and args['identity_file'] and args['identity_file_existence_checking']:
         dirname = os.path.dirname(config_file)
         identity_file = args['identity_file']
         if(not identity_file.startswith('/') and
